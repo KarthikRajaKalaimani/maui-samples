@@ -1,3 +1,5 @@
+using System.Windows.Input;
+
 namespace BillingService.Models;
 
 public class Product
@@ -9,4 +11,5 @@ public class Product
     public decimal PriceAmount { get; set; }
     public bool IsOwned { get; set; }
     public string ImageUrl { get; set; } = string.Empty;
+    public ICommand? PurchaseCommand { get; set; }
 }

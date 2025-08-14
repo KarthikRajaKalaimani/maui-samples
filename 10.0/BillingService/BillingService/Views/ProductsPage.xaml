@@ -94,8 +94,7 @@
 
                                         <Button Grid.Row="3"
                                                 Text="{Binding IsOwned, Converter={StaticResource BoolToTextConverter}, ConverterParameter='Owned|Buy Now'}"
-                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProductsViewModel}}, Path=PurchaseCommand}"
-                                                CommandParameter="{Binding .}"
+                                                Command="{Binding PurchaseCommand}"
                                                 BackgroundColor="{Binding IsOwned, Converter={StaticResource BoolToColorConverter}, ConverterParameter='LightGray|{StaticResource Primary}'}"
                                                 TextColor="White"
                                                 IsEnabled="{Binding IsOwned, Converter={StaticResource InverseBoolConverter}}"

@@ -59,6 +59,7 @@ public class ProductsViewModel : BaseViewModel
             Products.Clear();
             foreach (var product in products)
             {
+                product.PurchaseCommand = new Command(async () => await PurchaseProductAsync(product));
                 Products.Add(product);
             }
 

@@ -25,42 +25,45 @@ public class AndroidBillingService : BaseBillingService
 
     protected override async Task<bool> InitializePlatformAsync()
     {
-        try
+        return await Task.Run(() =>
         {
-            var context = Platform.CurrentActivity ?? Microsoft.Maui.ApplicationModel.Platform.CurrentActivity;
-            if (context == null)
+            try
             {
-                _logger.LogError("No current activity available for billing initialization");
+                var context = Platform.CurrentActivity ?? Microsoft.Maui.ApplicationModel.Platform.CurrentActivity;
+                if (context == null)
+                {
+                    _logger.LogError("No current activity available for billing initialization");
+                    return false;
+                }
+
+                if (_purchaseListener == null)
+                {
+                    _logger.LogError("Purchase listener not initialized");
+                    return false;
+                }
+
+                var pendingPurchasesParams = PendingPurchasesParams.NewBuilder()
+                    .EnableOneTimeProducts()
+                    .Build();
+
+                _billingClient = BillingClient.NewBuilder(context)
+                    .SetListener(_purchaseListener)
+                    .EnablePendingPurchases(pendingPurchasesParams)
+                    .Build();
+
+                _logger.LogInformation("Starting billing client connection...");
+                if (_stateListener != null)
+                {
+                    _billingClient.StartConnection(_stateListener);
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to initialize billing client");
                 return false;
             }
-
-            if (_purchaseListener == null)
-            {
-                _logger.LogError("Purchase listener not initialized");
-                return false;
-            }
-
-            var pendingPurchasesParams = PendingPurchasesParams.NewBuilder()
-                .EnableOneTimeProducts()
-                .Build();
-
-            _billingClient = BillingClient.NewBuilder(context)
-                .SetListener(_purchaseListener)
-                .EnablePendingPurchases(pendingPurchasesParams)
-                .Build();
-
-            _logger.LogInformation("Starting billing client connection...");
-            if (_stateListener != null)
-            {
-                _billingClient.StartConnection(_stateListener);
-            }
-            return true;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to initialize billing client");
-            return false;
-        }
+        });
     }
 
     protected override async Task<List<Product>> GetPlatformProductsAsync(List<Product> baseProducts)
@@ -94,7 +97,7 @@ public class AndroidBillingService : BaseBillingService
 
             _logger.LogInformation("Querying product details for {Count} products", productList.Count);
 
-            var productResult = await _billingClient.QueryProductDetailsAsync(queryParams);
+            var productResult = await _billingClient!.QueryProductDetailsAsync(queryParams);
 
             if (productResult.Result.ResponseCode == BillingResponseCode.Ok)
             {
@@ -206,7 +209,7 @@ public class AndroidBillingService : BaseBillingService
                 tcs.SetResult(purchasedProducts);
             });
 
-            _billingClient.QueryPurchases(queryPurchasesParams, purchaseResponseListener);
+            _billingClient!.QueryPurchases(queryPurchasesParams, purchaseResponseListener);
 
             return await tcs.Task;
         }
@@ -239,7 +242,7 @@ public class AndroidBillingService : BaseBillingService
 
             var productDetailsParams = QueryProductDetailsParams.NewBuilder().SetProductList(new[] { productList });
 
-            var productResult = await _billingClient.QueryProductDetailsAsync(productDetailsParams.Build());
+            var productResult = await _billingClient!.QueryProductDetailsAsync(productDetailsParams.Build());
 
             var skuDetails = productResult.ProductDetails.FirstOrDefault() ?? throw new ArgumentException($"{productId} does not exist");
             BillingFlowParams.ProductDetailsParams productDetailsParamsList;
