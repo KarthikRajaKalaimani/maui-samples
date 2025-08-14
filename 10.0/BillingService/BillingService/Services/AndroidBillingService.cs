@@ -97,7 +97,13 @@ public class AndroidBillingService : BaseBillingService
 
             _logger.LogInformation("Querying product details for {Count} products", productList.Count);
 
-            var productResult = await _billingClient!.QueryProductDetailsAsync(queryParams);
+            if (_billingClient == null)
+            {
+                _logger.LogError("Billing client is null when querying product details");
+                return baseProducts;
+            }
+
+            var productResult = await _billingClient.QueryProductDetailsAsync(queryParams);
 
             if (productResult.Result.ResponseCode == BillingResponseCode.Ok)
             {
@@ -209,7 +215,15 @@ public class AndroidBillingService : BaseBillingService
                 tcs.SetResult(purchasedProducts);
             });
 
-            _billingClient!.QueryPurchases(queryPurchasesParams, purchaseResponseListener);
+            if (_billingClient != null)
+            {
+                _billingClient.QueryPurchases(queryPurchasesParams, purchaseResponseListener);
+            }
+            else
+            {
+                _logger.LogError("Billing client is null when querying purchases");
+                tcs.SetResult(purchasedProducts);
+            }
 
             return await tcs.Task;
         }
@@ -242,7 +256,17 @@ public class AndroidBillingService : BaseBillingService
 
             var productDetailsParams = QueryProductDetailsParams.NewBuilder().SetProductList(new[] { productList });
 
-            var productResult = await _billingClient!.QueryProductDetailsAsync(productDetailsParams.Build());
+            if (_billingClient == null)
+            {
+                return await Task.FromResult(new PurchaseResult
+                {
+                    IsSuccess = false,
+                    ProductId = productId,
+                    ErrorMessage = "Billing client is not initialized"
+                });
+            }
+
+            var productResult = await _billingClient.QueryProductDetailsAsync(productDetailsParams.Build());
 
             var skuDetails = productResult.ProductDetails.FirstOrDefault() ?? throw new ArgumentException($"{productId} does not exist");
             BillingFlowParams.ProductDetailsParams productDetailsParamsList;
