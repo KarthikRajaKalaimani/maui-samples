@@ -105,23 +105,8 @@ BillingService/
    - Set up in-app products in the console
    - Configure product IDs, pricing, and descriptions
 
-2. **Android Manifest Permissions**:
-
-   ```xml
-   <uses-permission android:name="com.android.vending.BILLING" />
-   ```
-
-3. **Product Configuration**:
+2. **Product Configuration**:
    Update the product IDs in your billing service to match those configured in Google Play Console.
-
-### Testing
-
-For development and testing:
-
-- Use Google Play Console's testing features
-- Add test accounts in Google Play Console
-- Test with actual device signed with release keystore
-- Use static test product IDs for initial testing
 
 ## Run the Application
 
@@ -129,10 +114,7 @@ For development and testing:
 
 1. Ensure Android SDK is properly configured
 2. Set up an Android device or emulator
-3. Build and deploy:
-   ```bash
-   dotnet build -t:Run -f net10.0-android
-   ```
+3. Build and deploy
 
 ### Key Features Demonstrated
 
